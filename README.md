@@ -3,6 +3,13 @@
 
 Runtime OpenAPI v3 schema generation for [routing-controllers](https://github.com/typestack/routing-controllers).
 
+## 使用指南
+1. 设置内网scope
+- yarn config set @yunke:registry https://registry-npm.myscrm.cn/repository/yunke/
+2. 此版本基于[官方版本<1.8.1>](https://github.com/epiphone/routing-controllers-openapi)fork而来，主要为了解决
+- bodyParam参数在所有参数都不带required就会解析失败
+- bodyParam参数解析数组时，item为复杂类型时，无法解析成为正确的类型
+
 ## Installation
 
 `yarn add routing-controllers-openapi`

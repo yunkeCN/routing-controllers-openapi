@@ -1,6 +1,6 @@
 {
-  "name": "routing-controllers-openapi",
-  "version": "1.8.1",
+  "name": "@yunke/routing-controllers-openapi",
+  "version": "0.0.1",
   "description": "Runtime OpenAPI v3 spec generation for routing-controllers",
   "keywords": [
     "routing-controllers",
