@@ -169,23 +169,26 @@ export function getQueryParams(route: IRoute): oa.ParameterObject[] {
  * Return OpenAPI requestBody of given route, if it has one.
  */
 export function getRequestBody(route: IRoute): oa.RequestBodyObject | void {
-  const bodyParamMetas = route.params.filter(d => d.type === 'body-param')
-  const bodyParamsSchema: oa.SchemaObject | null =
-    bodyParamMetas.length > 0
-      ? bodyParamMetas.reduce(
-          (acc: oa.SchemaObject, d) => ({
-            ...acc,
-            properties: {
-              ...acc.properties,
-              [d.name!]: getParamSchema(d)
-            },
-            required: isRequired(d, route)
-              ? [...(acc.required || []), d.name!]
-              : acc.required
-          }),
-          { properties: {}, required: [], type: 'object' }
-        )
-      : null
+  const bodyParamMetas = route.params.filter(d => d.type === 'body-param');
+
+  let bodyParamsSchema: oa.SchemaObject | null = null;
+  const initValue: oa.SchemaObject = { properties: {}, required: [], type: 'object' };
+  if (bodyParamMetas.length > 0) {
+    bodyParamsSchema = bodyParamMetas.reduce((acc: oa.SchemaObject, d): oa.SchemaObject => {
+      const required = d.name && d.required !== false ? [...(acc.required || []), d.name] : (acc.required || []);
+      const result = getParamSchema(d);
+      return {
+        ...acc,
+        properties: {
+          ...acc.properties,
+          [d.name!]: result,
+        },
+        required,
+      }
+    },
+      initValue
+    )
+  }
 
   const bodyMeta = route.params.find(d => d.type === 'body')
 
@@ -303,10 +306,17 @@ function getParamSchema(
 
   const type = Reflect.getMetadata('design:paramtypes', object, method)[index]
   if (_.isFunction(type) && type.name === 'Array') {
-    const items = explicitType
-      ? { $ref: '#/components/schemas/' + explicitType.name }
-      : { type: 'object' }
-    return { items, type: 'array' }
+    let items = {};
+    if (!explicitType) {
+      items = { type: 'object' };
+    }
+    if (_.isFunction(explicitType)) {
+      items = { $ref: '#/components/schemas/' + explicitType.name };
+    }
+    if (_.isString(explicitType)) {
+      items = { type: explicitType };
+    }
+    return { items, type: 'array' };
   }
   if (explicitType) {
     return { $ref: '#/components/schemas/' + explicitType.name }
